@@ -1,0 +1,15 @@
+{
+	"name": "cftp/featured-media",
+	"description": "Featured Media functionality for WordPress",
+	"license": "GPL-2.0+",
+	"type": "wordpress-plugin",
+	"authors": [
+		{
+			"name"    : "Code For The People",
+			"homepage": "http://codeforthepeople.com/"
+		}
+	],
+	"require": {
+		"composer/installers": "~1.0"
+	}
+}
