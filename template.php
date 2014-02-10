@@ -25,20 +25,30 @@ function get_featured_media_video( $post_id = null ) {
 		return null;
 }
 
+/**
+ * example usage:
+ * 
+ *   if ( has_featured_media_gallery() ) {
+ *       $gallery = get_featured_media_gallery();
+ *       foreach ( $gallery as $image ) {
+ *           $src = wp_get_attachment_image_src( $image, 'medium' );
+ *           printf( '<img src="%s" alt="">', $src[0] );
+ *       }
+ *   }
+ * 
+ */
 function has_featured_media_gallery( $post_id = null ) {
-	/* **************** */
-	return false;
-	/* **************** */
-	$gallery = new \FeaturedMedia\PostGallery( $post_id );
-	$images = $gallery->get_gallery();
-	return !empty( $images );
+	$gallery = get_featured_media_gallery( $post_id );
+	return !empty( $gallery );
 }
 
 function get_featured_media_gallery( $post_id = null ) {
-	if ( has_featured_media_gallery( $post_id ) )
-		return new \FeaturedMedia\PostGallery( $post_id );
+	$post = get_post( $post_id );
+	$gallery_items = get_post_meta( $post->ID, '_featured-media-gallery', true );
+	if ( empty( $gallery_items ) )
+		return false;
 	else
-		return null;
+		return $gallery_items;
 }
 
 function has_featured_media_thumbnail( $post_id ) {
