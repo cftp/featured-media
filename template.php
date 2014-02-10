@@ -20,7 +20,7 @@ function has_featured_media_video( $post_id = null ) {
 
 function get_featured_media_video( $post_id = null ) {
 	if ( has_featured_media_video( $post_id ) )
-		return new \FeaturedMedia\PostGallery( $post_id );
+		return new \FeaturedMedia\PostVideo( $post_id );
 	else
 		return null;
 }
