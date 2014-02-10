@@ -146,6 +146,51 @@ var VideoThumbnail = Backbone.View.extend({
 
 });
 
+// Gallery view
+
+var GalleryPreview = Backbone.View.extend({
+
+	events : {
+		'click .fm_gallery_x' : 'doRemove'
+	},
+
+	initialize : function ( options ) {
+
+		this.model.on( 'change:featured_gallery_items', this.setGallery, this );
+
+	},
+
+	setGallery : function( model, value ) {
+
+		// Remove existing slides if necessary:
+		var fm = this.$( '.fm_gallery' ).find('.fm'),
+			size;
+		fm.empty();
+
+		// Append hidden inputs:
+		for ( var key in value ) {
+			// append
+			fm.append('<input type="hidden" name="featured-media-gallery[]" value="'+value[key].id+'">');
+		}
+
+		// Append thumbnail (use `medium` or `full` size though as `thumbnail` isn't big enough:
+		if ( value[0].sizes.medium )
+			size = value[0].sizes.medium;
+		else
+			size = value[0].sizes.full;
+
+		fm.append('<img src="'+size.url+'" alt="">');
+		this.$( '.fm_gallery' ).show();
+
+	},
+
+	doRemove : function( event ) {
+		wp.media.featuredMediaImage.set(-1);
+		event.preventDefault();
+	}
+
+});
+
 // Video preview view
 
 var VideoPreview = Backbone.View.extend({
@@ -213,6 +258,62 @@ jQuery( function( $ ) {
 
 	$( wp.media.featuredMediaImage.init );
 
+	wp.media.featuredMediaGallery = _.extend(wp.media.gallery,{
+
+		init: function() {
+
+			// Open the content media manager to the gallery tab
+			// @TODO hide the tabs on the left hand side
+			$('[data-set-feature="gallery"]').on( 'click', function( event ) {
+				event.preventDefault();
+
+				var gallery = wp.media.featuredMediaGallery,
+					frame;
+
+				if ( featuredmedia.post.gallery_items.length )
+					frame = gallery.edit( '[gallery ids="' + featuredmedia.post.gallery_items.join(',') + '"]' );
+				else
+					frame = gallery.create();
+
+				frame.state('gallery-edit').on( 'update', function( selection ) {
+
+					var attachments = [];
+
+					// Put the selection objects into an array.
+					selection.map( function( attachment ) {
+						var att = attachment.toJSON();
+						attachments.push( att );
+					});
+
+					model.set( 'featured_gallery_items', attachments );
+
+				});
+
+			});
+		},
+
+		create: function() {
+
+			// Destroy the previous gallery frame.
+			if ( this.frame )
+				this.frame.dispose();
+
+			// Store the current gallery frame.
+			this.frame = wp.media({
+				frame:     'post',
+				state:     'gallery',
+				title:     wp.media.view.l10n.createGalleryTitle,
+				editing:   true,
+				multiple:  true
+			}).open();
+
+			return this.frame;
+		}
+
+	});
+
+	$( wp.media.featuredMediaGallery.init );
+
 	new VideoInput( {
 		model : model,
 		el    : $( '#featured-media-container' )
@@ -222,6 +323,10 @@ jQuery( function( $ ) {
 		el    : $( '#featured-media-container' )
 	} );
 	new VideoPreview( {
+		model : model,
+		el    : $( '#featured-media-container' )
+	} );
+	new GalleryPreview( {
 		model : model,
 		el    : $( '#featured-media-container' )
 	} );

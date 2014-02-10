@@ -133,6 +133,7 @@ class Admin {
 	public function enqueue_scripts() {
 
 		$plugin = FeaturedMedia::init();
+		$post = get_post();
 
 		wp_enqueue_script(
 			'featured-media',
@@ -148,6 +149,7 @@ class Admin {
 				'post' => array(
 					'id'    => get_the_ID(),
 					'nonce' => wp_create_nonce( 'update-post_' . get_the_ID() ),
+					'gallery_items' => get_post_meta( $post->ID, '_featured-media-gallery', true ),
 				),
 			)
 		);
@@ -160,22 +162,32 @@ class Admin {
 
 		$video   = new PostVideo( $post );
 		$preview = $video->get_embed_code( $this->preview_args );
+		$gallery = '';
 
 		if ( has_post_thumbnail( $post->ID ) )
 			$thumbnail = get_the_post_thumbnail( $post->ID, array_values( $this->preview_args ) );
 		else
 			$thumbnail = '';
 
-		$gallery = '';
+		$gallery_items = get_post_meta( $post->ID, '_featured-media-gallery', true );
+
+		if ( !empty( $gallery_items ) ) {
+			foreach ( $gallery_items as $gallery_item ) {
+				$gallery .= sprintf( '<input type="hidden" name="featured-media-gallery[]" value="%s">', absint( $gallery_item ) );
+			}
+			$src = wp_get_attachment_image_src( $gallery_items[0], 'medium' );
+			$gallery .= sprintf( '<img src="%s" alt="">', $src[0] );
+		}
+
 		$class = 'no_fm';
-		if ( !empty( $thumbnail ) or !empty( $preview ) )
+		if ( !empty( $thumbnail ) or !empty( $preview ) or !empty( $gallery ) )
 			$class = '';
 
 		?>
 		<div id="featured-media-container">
 			<div class="fm_thumbnail"<?php if ( empty( $thumbnail ) ) echo ' style="display:none"'; ?>><a href="#" class="fm_x fm_thumbnail_x">X</a><div class="fm"><?php echo $thumbnail; ?></div></div>
 			<div class="fm_previewer"<?php if ( empty( $preview ) ) echo ' style="display:none"'; ?>><a href="#" class="fm_x fm_previewer_x">X</a><div class="fm"><?php echo $preview; ?></div></div>
-			<div class="fm_gallery"><?php echo $gallery; ?></div>
+			<div class="fm_gallery"<?php if ( empty( $gallery ) ) echo ' style="display:none"'; ?>><a href="#" class="fm_x fm_gallery_x">X</a><div class="fm"><?php echo $gallery; ?></div></div>
 			<p id="featured-media-set" class="<?php echo $class; ?>">
 				<a href="#" data-set-feature="thumbnail"><?php _e( 'Image', 'featured-media' ); ?></a>
 				<a href="#" data-set-feature="video"><?php _e( 'Video', 'featured-media' ); ?></a>
@@ -198,6 +210,7 @@ class Admin {
 
 		check_admin_referer( "featured-media-{$post->ID}", '_featured_media_nonce' );
 
+		# VIDEO
 		$video = new PostVideo( $post );
 		$video_url   = trim( wp_unslash( $_POST['featured-media-video-url'] ) );
 
@@ -215,6 +228,14 @@ class Admin {
 			$video->delete_url();
 
 		}
+
+		# GALLERY
+		$gallery = array_filter( array_map( 'absint', (array) $_POST['featured-media-gallery'] ) );
+
+		if ( !empty( $gallery ) )
+			update_post_meta( $post->ID, '_featured-media-gallery', $gallery );
+		else
+			delete_post_meta( $post->ID, '_featured-media-gallery' );
 
 	}
 
