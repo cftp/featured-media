@@ -62,8 +62,10 @@ class Admin {
 
 		$url = esc_url_raw( $url );
 
-		if ( is_ssl() )
+		if ( is_ssl() ) {
 			$url = set_url_scheme( $url );
+		}
+
 		$oembed = new oEmbed( $url );
 
 		if ( ! $oembed->has_provider() ) {
@@ -138,7 +140,6 @@ class Admin {
 	public function enqueue_scripts() {
 
 		$plugin = FeaturedMedia::init();
-		$post = get_post();
 
 		wp_enqueue_script(
 			'featured-media',
@@ -154,7 +155,7 @@ class Admin {
 				'post' => array(
 					'id'    => get_the_ID(),
 					'nonce' => wp_create_nonce( 'update-post_' . get_the_ID() ),
-					'gallery_items' => get_post_meta( $post->ID, '_featured-media-gallery', true ),
+					'gallery_items' => get_post_meta( get_the_ID(), '_featured-media-gallery', true ),
 				),
 			)
 		);
