@@ -83,6 +83,12 @@ class Admin {
 			) );
 		}
 
+		if ( ! has_post_thumbnail( $post->ID ) ) {
+			if ( $thumb = $this->fetch_thumbnail( $post, $details ) ) {
+				$details->imported_thumbnail_id = $thumb->get_attachment_ID();
+			}
+		}
+
 		wp_send_json_success( $details );
 
 	}
@@ -221,7 +227,13 @@ class Admin {
 				return;
 			}
 
-			$video->update_details();
+			$details = $video->update_details();
+
+			if ( $details and ! has_post_thumbnail( $post->ID ) ) {
+				if ( $thumb = $this->fetch_thumbnail( $post, $details ) ) {
+					set_post_thumbnail( $post->ID, $thumb->get_attachment_ID() );
+				}
+			}
 
 		} else {
 
@@ -236,6 +248,41 @@ class Admin {
 			update_post_meta( $post->ID, '_featured-media-gallery', $gallery );
 		else
 			delete_post_meta( $post->ID, '_featured-media-gallery' );
+
+	}
+
+	public function fetch_thumbnail( $post_id, \stdClass $details ) {
+
+		$post = get_post( $post_id );
+
+		switch ( $details->type ) {
+
+			case 'photo':
+				$field = 'url';
+				break;
+
+			case 'rich':
+			case 'link':
+			case 'video':
+			default:
+				$field = 'thumbnail_url';
+				break;
+
+		}
+
+		if ( !empty( $details->$field ) ) {
+
+			$filename = $post->post_name . '-' . basename( $details->$field );
+			$photo    = new ExternalPhoto( $details->$field );
+
+			if ( $photo->import( $filename ) ) {
+				$photo->attach_to( $post, $details->title );
+				return $photo;
+			}
+
+		}
+
+		return false;
 
 	}
 
