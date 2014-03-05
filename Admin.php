@@ -64,15 +64,14 @@ class Admin {
 
 		if ( is_ssl() )
 			$url = set_url_scheme( $url );
+		$oembed = new oEmbed( $url );
 
-		if ( ! FeaturedMedia::init()->get_oembed_provider( $url ) ) {
+		if ( ! $oembed->has_provider() ) {
 			wp_send_json_error( array(
 				'error_code'    => 'no_provider',
 				'error_message' => __( 'The URL you entered is not supported.', 'featured-media' )
 			) );
 		}
-
-		$oembed = new oEmbed( $url );
 
 		# @TODO test that oEmbed is for a video
 

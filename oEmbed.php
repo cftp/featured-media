@@ -24,7 +24,7 @@ class oEmbed {
 	public function __construct( $url ) {
 
 		$this->url      = $url;
-		$this->provider = FeaturedMedia::init()->get_oembed_provider( $url );
+		$this->provider = self::get_provider( $url );
 
 	}
 
@@ -37,6 +37,41 @@ class oEmbed {
 
 		return _wp_oembed_get_object()->fetch( $this->provider, $this->url, $args );
 
+	}
+
+	public static function get_provider( $url ) {
+
+		$provider = false;
+
+		if ( ! trim( $url ) ) {
+			return $provider;
+		}
+
+		require_once ABSPATH . WPINC . '/class-oembed.php';
+
+		# See http://core.trac.wordpress.org/ticket/24381
+
+		foreach ( _wp_oembed_get_object()->providers as $matchmask => $data ) {
+			list( $providerurl, $regex ) = $data;
+
+			// Turn the asterisk-type provider URLs into regex
+			if ( !$regex ) {
+				$matchmask = '#' . str_replace( '___wildcard___', '(.+)', preg_quote( str_replace( '*', '___wildcard___', $matchmask ), '#' ) ) . '#i';
+				$matchmask = preg_replace( '|^#http\\\://|', '#https?\://', $matchmask );
+			}
+
+			if ( preg_match( $matchmask, $url ) ) {
+				$provider = str_replace( '{format}', 'json', $providerurl ); // JSON is easier to deal with than XML
+				break;
+			}
+		}
+
+		return $provider;
+
+	}
+
+	protected function has_provider() {
+		return ( false !== $this->provider );
 	}
 
 }
