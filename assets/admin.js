@@ -18,6 +18,7 @@ GNU General Public License for more details.
 var FeaturedMediaModel = Backbone.Model.extend({
 
 	initialize : function() {
+		this.on( 'change:imported_thumbnail_id', this.setThumb, this );
 	},
 
 	setVideo : function( url ) {
@@ -42,10 +43,12 @@ var FeaturedMediaModel = Backbone.Model.extend({
 					this.set( 'video_title', response.data.title );
 				if ( response.data.html )
 					this.set( 'video_html', response.data.html );
-				if ( response.data.featured_image_url ) // not used yet
+				if ( response.data.featured_image_url )
 					this.set( 'featured_image_url', response.data.featured_image_url );
-				if ( response.data.featured_image_id ) // not used yet
+				if ( response.data.featured_image_id )
 					this.set( 'featured_image_id', response.data.featured_image_id );
+				if ( response.data.imported_thumbnail_id )
+					this.set( 'imported_thumbnail_id', response.data.imported_thumbnail_id );
 
 			} else if ( response.data.error_message ) {
 
@@ -54,6 +57,12 @@ var FeaturedMediaModel = Backbone.Model.extend({
 			}
 
 		}, this ), 'json' );
+
+	},
+
+	setThumb : function( model, value ) {
+
+		wp.media.featuredMediaImage.set( value );
 
 	}
 

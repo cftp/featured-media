@@ -41,38 +41,6 @@ class FeaturedMedia extends Plugin {
 
 	}
 
-	public static function get_oembed_provider( $url ) {
-
-		$provider = false;
-
-		if ( ! trim( $url ) )
-			return $provider;
-
-		require_once ABSPATH . WPINC . '/class-oembed.php';
-
-		$providers = _wp_oembed_get_object()->providers;
-
-		# See http://core.trac.wordpress.org/ticket/24381
-
-		foreach ( $providers as $matchmask => $data ) {
-			list( $providerurl, $regex ) = $data;
-
-			// Turn the asterisk-type provider URLs into regex
-			if ( !$regex ) {
-				$matchmask = '#' . str_replace( '___wildcard___', '(.+)', preg_quote( str_replace( '*', '___wildcard___', $matchmask ), '#' ) ) . '#i';
-				$matchmask = preg_replace( '|^#http\\\://|', '#https?\://', $matchmask );
-			}
-
-			if ( preg_match( $matchmask, $url ) ) {
-				$provider = str_replace( '{format}', 'json', $providerurl ); // JSON is easier to deal with than XML
-				break;
-			}
-		}
-
-		return $provider;
-
-	}
-
 	public function filter_post_class( $classes, $class, $post_id ) {
 
 		if ( has_featured_media_video( $post_id ) )

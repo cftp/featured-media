@@ -62,17 +62,18 @@ class Admin {
 
 		$url = esc_url_raw( $url );
 
-		if ( is_ssl() )
+		if ( is_ssl() ) {
 			$url = set_url_scheme( $url );
+		}
 
-		if ( ! FeaturedMedia::init()->get_oembed_provider( $url ) ) {
+		$oembed = new oEmbed( $url );
+
+		if ( ! $oembed->has_provider() ) {
 			wp_send_json_error( array(
 				'error_code'    => 'no_provider',
 				'error_message' => __( 'The URL you entered is not supported.', 'featured-media' )
 			) );
 		}
-
-		$oembed = new oEmbed( $url );
 
 		# @TODO test that oEmbed is for a video
 
@@ -81,6 +82,12 @@ class Admin {
 				'error_code'    => 'no_results',
 				'error_message' => __( 'Video details could not be fetched. Please try again shortly.', 'featured-media' )
 			) );
+		}
+
+		if ( ! has_post_thumbnail( $post->ID ) ) {
+			if ( $thumb = $this->fetch_thumbnail( $post, $details ) ) {
+				$details->imported_thumbnail_id = $thumb->get_attachment_ID();
+			}
 		}
 
 		wp_send_json_success( $details );
@@ -133,7 +140,6 @@ class Admin {
 	public function enqueue_scripts() {
 
 		$plugin = FeaturedMedia::init();
-		$post = get_post();
 
 		wp_enqueue_script(
 			'featured-media',
@@ -149,7 +155,7 @@ class Admin {
 				'post' => array(
 					'id'    => get_the_ID(),
 					'nonce' => wp_create_nonce( 'update-post_' . get_the_ID() ),
-					'gallery_items' => get_post_meta( $post->ID, '_featured-media-gallery', true ),
+					'gallery_items' => get_post_meta( get_the_ID(), '_featured-media-gallery', true ),
 				),
 			)
 		);
@@ -221,7 +227,13 @@ class Admin {
 				return;
 			}
 
-			$video->update_details();
+			$details = $video->update_details();
+
+			if ( $details and ! has_post_thumbnail( $post->ID ) ) {
+				if ( $thumb = $this->fetch_thumbnail( $post, $details ) ) {
+					set_post_thumbnail( $post->ID, $thumb->get_attachment_ID() );
+				}
+			}
 
 		} else {
 
@@ -236,6 +248,41 @@ class Admin {
 			update_post_meta( $post->ID, '_featured-media-gallery', $gallery );
 		else
 			delete_post_meta( $post->ID, '_featured-media-gallery' );
+
+	}
+
+	public function fetch_thumbnail( $post_id, \stdClass $details ) {
+
+		$post = get_post( $post_id );
+
+		switch ( $details->type ) {
+
+			case 'photo':
+				$field = 'url';
+				break;
+
+			case 'rich':
+			case 'link':
+			case 'video':
+			default:
+				$field = 'thumbnail_url';
+				break;
+
+		}
+
+		if ( !empty( $details->$field ) ) {
+
+			$filename = $post->post_name . '-' . basename( $details->$field );
+			$photo    = new ExternalPhoto( $details->$field );
+
+			if ( $photo->import( $filename ) ) {
+				$photo->attach_to( $post, $details->title );
+				return $photo;
+			}
+
+		}
+
+		return false;
 
 	}
 

@@ -103,8 +103,9 @@ class PostVideo {
 
 		$url = esc_url_raw( $url );
 
-		if ( ! FeaturedMedia::init()->get_oembed_provider( $url ) )
+		if ( ! oEmbed::get_provider( $url ) ) {
 			return false;
+		}
 
 		$this->url = $url;
 
