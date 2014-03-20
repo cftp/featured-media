@@ -4,7 +4,7 @@ Plugin Name: Featured Media
 Plugin URI:  https://github.com/cftp/featured-media
 Description: Use an image, video, or gallery for your featured media
 Author:      Code For The People
-Version:     1.0
+Version:     1.1
 Author URI:  http://codeforthepeople.com/
 Text Domain: featured-media
 Domain Path: /languages/
