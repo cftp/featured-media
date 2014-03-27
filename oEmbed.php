@@ -35,7 +35,26 @@ class oEmbed {
 
 		require_once ABSPATH . WPINC . '/class-oembed.php';
 
-		return _wp_oembed_get_object()->fetch( $this->provider, $this->url, $args );
+		$details = _wp_oembed_get_object()->fetch( $this->provider, $this->url, $args );
+
+		if ( $details ) {
+			$details = $this->process_details( $details );
+		}
+
+		return $details;
+
+	}
+
+	public function process_details( \stdClass $details ) {
+
+		if ( false !== strpos( $this->provider, 'youtube' ) ) {
+
+			# The thumbnail in YouTube's oEmbed response is a bit too small so we'll replace it with a larger one:
+			$details->thumbnail_url = str_replace( 'hqdefault', 'maxresdefault', $details->thumbnail_url );
+
+		}
+
+		return $details;
 
 	}
 
