@@ -70,7 +70,7 @@ class oEmbed {
 
 	}
 
-	protected function has_provider() {
+	public function has_provider() {
 		return ( false !== $this->provider );
 	}
 
