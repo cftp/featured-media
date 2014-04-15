@@ -1,0 +1,50 @@
+#. extracted from eurosportcsv/[LeMag-LeBuzz] Internationnalisation_FR - plugin-featured-media.csv
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-04-15 11:18+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 1.9.0\n"
+
+#: Admin.php:49
+msgid "Invalid post ID."
+msgstr "Identifiant d'article invalide."
+
+#: Admin.php:59
+msgid "No URL entered."
+msgstr "Aucune URL saisie."
+
+#: Admin.php:71
+msgid "The URL you entered is not supported."
+msgstr "L'URL que vous avez saisi n'est pas supportée."
+
+#: Admin.php:82
+msgid "Video details could not be fetched. Please try again shortly."
+msgstr ""
+"Les détails de la vidéo n'ont pas pu être téléchargés. Merci de recommencer."
+
+#: Admin.php:99
+msgid "Featured Media"
+msgstr "Media principal"
+
+#: Admin.php:192
+msgid "Image"
+msgstr "Image"
+
+#: Admin.php:193
+msgid "Video"
+msgstr "Vidéo"
+
+#: Admin.php:194
+msgid "Gallery"
+msgstr "Galerie "
+
+#: Admin.php:196
+msgid "Enter video page URL"
+msgstr "Entrez l'URL de la vidéo"

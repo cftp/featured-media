@@ -7,7 +7,7 @@ Author:      Code For The People
 Version:     1.1.1
 Author URI:  http://codeforthepeople.com/
 Text Domain: featured-media
-Domain Path: /languages/
+Domain Path: /assets/languages/
 License:     GPL v2 or later
 
 Copyright © 2014 Code for the People Ltd

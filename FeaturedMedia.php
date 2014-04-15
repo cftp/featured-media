@@ -26,6 +26,9 @@ class FeaturedMedia extends Plugin {
 		# Filters
 		add_filter( 'post_class', array( $this, 'filter_post_class' ), 10, 3 );
 
+		# languages
+		add_action( 'after_theme_setup', array( $this, 'load_language_files' ) );
+
 		# Parent setup:
 		parent::__construct( $file );
 
@@ -39,6 +42,11 @@ class FeaturedMedia extends Plugin {
 
 		return $instance;
 
+	}
+
+	public function load_language_files() {
+		//
+		load_plugin_textdomain( 'featured-media', false, dirname(__FILE__) . '/assets/languages/');
 	}
 
 	public function filter_post_class( $classes, $class, $post_id ) {
