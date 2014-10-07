@@ -31,15 +31,42 @@ class ExternalPhoto {
 			include_once ABSPATH . WPINC. '/class-http.php';
 		}
 
-		$photo = wp_remote_get( $this->url );
-
-		if ( is_wp_error( $photo ) ) {
+		$tmpfname = wp_tempnam($this->url);
+		if ( ! $tmpfname )
 			return false;
-		} if ( 200 != wp_remote_retrieve_response_code( $photo ) ) {
-			return false;
-		}
 
-		$attachment = wp_upload_bits( $filename, null, $photo['body'], date( 'Y/m', strtotime( $photo['headers']['date'] ) ) );
+		$photo = wp_safe_remote_get( $this->url, array( 'timeout' => 5, 'stream' => true, 'filename' => $tmpfname ) );
+
+		if ( is_wp_error( $photo ) )
+			return false;
+
+		if ( 200 != wp_remote_retrieve_response_code( $photo ) )
+			return false;
+
+		$file = array(
+			'name' => $filename,
+			'type' => $photo['headers']['content-type'],
+			'tmp_name' => $tmpfname,
+			'error' => 0,
+			'size' => $photo['headers']['content-length']
+		);
+
+		$overrides = array(
+			// tells WordPress to not look for the POST form
+			// fields that would normally be present, default is true,
+			// we downloaded the file from a remote server, so there
+			// will be no form fields
+			'test_form' => false,
+
+			// setting this to false lets WordPress allow empty files, not recommended
+			'test_size' => true,
+
+			// A properly uploaded file will pass this test.
+			// There should be no reason to override this one.
+			'test_upload' => true,
+		);
+
+		$attachment = wp_handle_sideload( $file, $overrides, date( 'Y/m', strtotime( $photo['headers']['date'] ) ) );
 
 		if ( !empty( $attachment['error'] ) ) {
 			return false;
