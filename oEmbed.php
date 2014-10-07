@@ -50,7 +50,10 @@ class oEmbed {
 		if ( false !== strpos( $this->provider, 'youtube' ) ) {
 
 			# The thumbnail in YouTube's oEmbed response is a bit too small so we'll replace it with a larger one:
-			$details->thumbnail_url = str_replace( 'hqdefault', 'maxresdefault', $details->thumbnail_url );
+			$check = wp_remote_get( str_replace( 'hqdefault', 'maxresdefault', $details->thumbnail_url ) );
+			if ( ! is_wp_error( $check ) && 404 != $check['response']['code'] ) {
+				$details->thumbnail_url = str_replace( 'hqdefault', 'maxresdefault', $details->thumbnail_url );
+			}
 
 		}
 
