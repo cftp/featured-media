@@ -194,6 +194,7 @@ var GalleryPreview = Backbone.View.extend({
 	},
 
 	doRemove : function( event ) {
+		this.$( '.fm_gallery' ).find('.fm').empty();
 		wp.media.featuredMediaImage.set(-1);
 		event.preventDefault();
 	}
